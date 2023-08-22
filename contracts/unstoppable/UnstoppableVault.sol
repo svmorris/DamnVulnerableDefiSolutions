@@ -29,10 +29,12 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
 
     event FeeRecipientUpdated(address indexed newFeeRecipient);
 
+    // The pool uses the damn vulnerable token for loans
     constructor(ERC20 _token, address _owner, address _feeRecipient)
         ERC4626(_token, "Oh Damn Valuable Token", "oDVT")
         Owned(_owner)
     {
+        // fee recipient is where all the fees that come from loans are transferred
         feeRecipient = _feeRecipient;
         emit FeeRecipientUpdated(_feeRecipient);
     }
@@ -90,17 +92,26 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
         uint256 amount,
         bytes calldata data
     ) external returns (bool) {
+        // make sure the amount borrowed is not 0
         if (amount == 0) revert InvalidAmount(0); // fail early
+        // make sure the currency loaned is the one that we are allowed to
         if (address(asset) != _token) revert UnsupportedCurrency(); // enforce ERC3156 requirement
+        // check the balance before the loan
         uint256 balanceBefore = totalAssets();
+        // If the "shares" and the balance before is not the same, then the contract will stop all loans
+        // This is probably the way we can force the contract to break
         if (convertToShares(totalSupply) != balanceBefore) revert InvalidBalance(); // enforce ERC4626 requirement
+        // Calculate a fee for the flashloan
         uint256 fee = flashFee(_token, amount);
-        // transfer tokens out + execute callback on receiver
-        ERC20(_token).safeTransfer(address(receiver), amount);
+        // transfer the tokens to the receiver
+        ERC20(_token).safeTransfer(address(receiver), amount); // transfer tokens out + execute callback on receiver
+
         // callback must return magic value, otherwise assume it failed
         if (receiver.onFlashLoan(msg.sender, address(asset), amount, fee, data) != keccak256("IERC3156FlashBorrower.onFlashLoan"))
             revert CallbackFailed();
+
         // pull amount + fee from receiver, then pay the fee to the recipient
+        // Collect the fees
         ERC20(_token).safeTransferFrom(address(receiver), address(this), amount + fee);
         ERC20(_token).safeTransfer(feeRecipient, fee);
         return true;

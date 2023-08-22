@@ -16,6 +16,7 @@ contract SimpleGovernance is ISimpleGovernance {
     mapping(uint256 => GovernanceAction) private _actions;
 
     constructor(address governanceToken) {
+        // the governance token is different from the loan token
         _governanceToken = DamnValuableTokenSnapshot(governanceToken);
         _actionCounter = 1;
     }
@@ -24,14 +25,17 @@ contract SimpleGovernance is ISimpleGovernance {
         if (!_hasEnoughVotes(msg.sender))
             revert NotEnoughVotes(msg.sender);
 
+        // the target can be the pool
         if (target == address(this))
             revert InvalidTarget();
         
+        // the target has to be an address (pool is good)
         if (data.length > 0 && target.code.length == 0)
             revert TargetMustHaveCode();
 
         actionId = _actionCounter;
 
+        // queue the action?
         _actions[actionId] = GovernanceAction({
             target: target,
             value: value,
@@ -89,7 +93,7 @@ contract SimpleGovernance is ISimpleGovernance {
      * 1) it's never been executed before and
      * 2) enough time has passed since it was first proposed
      */
-    function _canBeExecuted(uint256 actionId) private view returns (bool) {
+    function _canBeExecuted(uint256 actionId) public view returns (bool) {// Function made public just for debugging
         GovernanceAction memory actionToExecute = _actions[actionId];
         
         if (actionToExecute.proposedAt == 0) // early exit
@@ -100,12 +104,39 @@ contract SimpleGovernance is ISimpleGovernance {
             timeDelta = uint64(block.timestamp) - actionToExecute.proposedAt;
         }
 
+        // since an action can only be executed every 2 days, we should probably user
+        // the trick with speeding up time again
         return actionToExecute.executedAt == 0 && timeDelta >= ACTION_DELAY_IN_SECONDS;
     }
 
-    function _hasEnoughVotes(address who) private view returns (bool) {
+    // A 'user' will only have enough votes if they have more than 50 percent of
+    // of the governance tokens
+    function _hasEnoughVotes(address who) public view returns (bool) { // Function made public just for debugging
         uint256 balance = _governanceToken.getBalanceAtLastSnapshot(who);
         uint256 halfTotalSupply = _governanceToken.getTotalSupplyAtLastSnapshot() / 2;
         return balance > halfTotalSupply;
     }
 }
+
+
+
+// My instinct is to say that we can somehow borrow governance
+// tokens from the flash loan pool to push an action forwards
+// that would emergency exit the pool and give us all the funds.
+
+// Not sure if these are the same token though
+
+// YES -- it is the same token
+
+// In that case this plan should work. We just need to figure out how to interact with
+// with the governance contract
+
+// We need to figure out some stuff about this snapshot business. It only checks the number
+// of governance tokens you had at the last snapshot, so we somehow have to borrow money
+// when a snapshot is happening.
+
+// Then we can even just send the money back bc we don't actually need it currently to queue
+// the action
+
+
+// There does not seem to be any restrictions on who can take snapshots?

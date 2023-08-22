@@ -48,6 +48,8 @@ contract FlashLoanReceiver is IERC3156FlashBorrower {
         // Return funds to pool
         SafeTransferLib.safeTransferETH(pool, amountToBeRepaid);
 
+        // this is probably not a very safe string to used
+        // assuming it does not have to be secret
         return keccak256("ERC3156FlashBorrower.onFlashLoan");
     }
 
